@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import javax.swing.JOptionPane;
 
 // Class to contain pet object
 public class Pet {
@@ -12,6 +13,16 @@ public class Pet {
    private int energyLevel;
    private int hunger;
    private ArrayList<String> customTraits;
+   
+   public Pet() {
+       this.name = "...";          
+       this.petType = "...";       
+       this.health = 100;              
+       this.happiness = 100;           
+       this.energyLevel = 100;         
+       this.hunger = 0;                
+       this.customTraits = new ArrayList<String>(); 
+   }
    
    // Arg constructor
    public Pet(String name, String petType) {
@@ -108,17 +119,30 @@ public class Pet {
       setHunger(getHunger() + 10);
    }
    
-   public void hungry() {
-      while(getHunger() == 100) {
-      
-         setHealth(getHealth() - 5);
-         
-         try {
-            Thread.sleep(5000); // Update stat every 5 second (5000 milliseconds)
-         } catch (InterruptedException e) {
-            e.printStackTrace();
-         }
-      }
+   public void hungry(Pet pet, Data data, GameControl gameControl) {
+	  ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+      scheduler.scheduleAtFixedRate(new Runnable() {
+         @Override
+         public void run() {
+        	 if (getHunger() == 100) {
+        		 setHealth(getHealth() - 5);
+                 
+                 if (getHealth() == 20) {
+                     String warning = "Warning! Your pet's health is at 20% health!";
+                     JOptionPane.showMessageDialog(null, warning, getName() + " needs to be fed!", JOptionPane.INFORMATION_MESSAGE);
+                 } else if (getHealth() <= 0) {
+                     String wompWomp = "Your pet is dead :(";
+                     JOptionPane.showMessageDialog(null, wompWomp, getName() + " has been removed from your saved pets", JOptionPane.INFORMATION_MESSAGE);
+
+                     data.removePet(pet);
+                     gameControl.startGame();
+
+                     scheduler.shutdown();
+                     return;
+                 }
+             }
+          }
+      }, 0, 30, TimeUnit.SECONDS);
    }
    
    // Constantly updates the pet stats, i.e. health, happiness, and energy
@@ -127,11 +151,14 @@ public class Pet {
       scheduler.scheduleAtFixedRate(new Runnable() {
          @Override
          public void run() {
-            setHappiness(getHappiness() - 2);
-            setEnergyLevel(getEnergyLevel() - 2);
-            setHunger(getHunger() + 1);
-            
-            displayStatus();
+        	 setHappiness(getHappiness() - 2);
+             setEnergyLevel(getEnergyLevel() - 2);
+             setHunger(getHunger() + 1);
+             
+             if(getHealth() == 0) {
+            	 scheduler.shutdown();
+                 return; 
+             }
          }
       }, 0, 30, TimeUnit.SECONDS);
 
@@ -139,12 +166,25 @@ public class Pet {
    
    // Displays pet stats as they update
    public void displayStatus() {
-      System.out.println("------------------------------------------------------------------");
-      System.out.println("Health: " + getHealth() + 
-                         "%   Happiness: " + getHappiness() + 
-                         "%   Energy Level: " + getEnergyLevel() + 
-                         "%   Hunger: " + getHunger());
-      System.out.println("------------------------------------------------------------------");
+      String stats = "Health: " + getHealth() + "%\n" +
+    		  		 "Happiness: " + getHappiness() + "%\n" +
+    		  		 "Energy Level: " + getEnergyLevel() + "%\n" +
+    		  		 "Hunger: " + getHunger() + "%";
+      JOptionPane.showMessageDialog(null, stats, getName() + "'s Stats", JOptionPane.INFORMATION_MESSAGE);
    }
- 
+   
+   @Override
+   public boolean equals(Object obj) {
+       if (this == obj) return true; 
+       if (obj == null || getClass() != obj.getClass()) return false; 
+
+       Pet pet = (Pet) obj; 
+       return name.equals(pet.name); 
+   }
+
+   @Override
+   public int hashCode() {
+       return name.hashCode(); 
+   }
 }
+
