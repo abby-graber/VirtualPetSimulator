@@ -1,0 +1,10 @@
+In order to run the VirtualPetSimulator, you’ll need to have maven supported.
+1. Open GameControl.java
+2. Hit run and a window will pop up
+3. Press start or exit game
+4. If you choose to start, you can either create a pet or load a pet from your created database(The database will be empty until you’ve created a pet)
+5. Once the pet has been loaded or created, you can interact with the pet object and it will start updating it's status
+6. Interacting with the pet will either increase or decrease the pet’s status which you can see by clicking on the “check status”
+7. You can only save your pet’s state if you let it sleep
+8. Once you let it sleep, you can exit the pet window and it will bring you back to the start where you can repeat the process. 
+   This time though, if you have created a pet, if you choose to load the pet you will see your pet in a list.
